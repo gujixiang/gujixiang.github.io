@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<html lang class="loading">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title> - gugu</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate">
+    <meta name="keywords" content="Fechin,"> 
+    <meta name="description" content="HADOOP高可用HA理解与搭建起源HDFS 1.0中存在单点故障和内存受限问题。从HDFS 2 起  引入HA解决方案
+HDFS HA架构图
+HDFS  2.x解决方案解决HDFS 1.0中单点故,"> 
+    <meta name="author" content="jixiang gu"> 
+    <link rel="alternative" href="atom.xml" title="gugu" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+    <link rel="stylesheet" href="/css/diaspora.css">
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({
+              google_ad_client: "ca-pub-8691406134231910",
+              enable_page_level_ads: true
+         });
+    </script>
+    <script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
+    </script>
+</head>
+</html>
+<body class="loading">
+    <span id="config-title" style="display:none">gugu</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;" data-url="http://yoursite.com"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle"></h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title"></h1>
+        <div class="stuff">
+            <span>八月 25, 2019</span>
+            
+
+        </div>
+        <div class="content markdown">
+            <h1 id="HADOOP高可用HA理解与搭建"><a href="#HADOOP高可用HA理解与搭建" class="headerlink" title="HADOOP高可用HA理解与搭建"></a>HADOOP高可用HA理解与搭建</h1><h2 id="起源"><a href="#起源" class="headerlink" title="起源"></a>起源</h2><p>HDFS 1.0中存在单点故障和内存受限问题。从HDFS 2 起  引入HA解决方案</p>
+<h2 id="HDFS-HA架构图"><a href="#HDFS-HA架构图" class="headerlink" title="HDFS HA架构图"></a>HDFS HA架构图</h2><p><img src="image/image-20190726102212249.png" alt="image-20190726102212249"></p>
+<h2 id="HDFS-2-x解决方案"><a href="#HDFS-2-x解决方案" class="headerlink" title="HDFS  2.x解决方案"></a>HDFS  2.x解决方案</h2><p>解决HDFS 1.0中单点故障和内存受限问题，联邦     HA</p>
+<p>HDFS2.x中Federation和HA分离，HA只能有两个NameNode</p>
+<p>解决单点故障</p>
+<p>HDFS HA：通过主备NameNode解决</p>
+<p>如果主NameNode发生故障，则切换到备NameNode上。</p>
+<p>解决内存受限问题</p>
+<p>HDFS Federation(联邦)；水平扩展，支持多个NameNode；</p>
+<p>（1）所有NameNode共享所有DataNode存储资源</p>
+<p>（2）每个NameNode分管一部分目录；</p>
+<p><img src="image/image-20190726091103188.png" alt></p>
+<h3 id="namenode实现机制"><a href="#namenode实现机制" class="headerlink" title="namenode实现机制"></a>namenode实现机制</h3><p>1、一个NameNode进程处于Active状态，另1个NameNode进程处于Standby状态。Active的NameNode负责处理客户端的请求。</p>
+<p>2、Active的NN修改了元数据之后，会在JNs的半数以上的节点上记录这个日志。Standby状态的NameNode会监视任何对JNs上edit log的更改。一旦edits log出现更改，Standby的NN就会根据edits log更改自己记录的元数据。</p>
+<p>3、当发生故障转移时，Standby主机会确保已经读取了JNs上所有的更改来同步它本身记录的元数据，然后由Standby状态切换为Active状态。</p>
+<p>4、为了确保在发生故障转移操作时拥有相同的数据块位置信息，DNs向所有NN发送数据块位置信息和心跳数据。</p>
+<p>5、JNs只允许一台NameNode向JNs写edits log数据，这样就能保证不会发生“脑裂”。</p>
+<h2 id="HDFS-3-0-HA解决方案"><a href="#HDFS-3-0-HA解决方案" class="headerlink" title="HDFS  3.0  HA解决方案"></a>HDFS  3.0  HA解决方案</h2><p>1、主备NameNode</p>
+<p>解决单点故障（属性，位置）</p>
+<p>主NameNode对外提供服务，备NameNode同步主NameNode元数据，以待切换</p>
+<p>所有DataNode同时向两个NameNode汇报数据块信息（位置）</p>
+<p>2、JNN:集群（属性）</p>
+<p>standby：备，完成了edits.log文件的合并产生新的image，推送回ANN</p>
+<p>3、两种切换选择</p>
+<ol>
+<li><p>手动切换：通过命令实现主备之间的切换，可以用HDFS升级等场合</p>
+</li>
+<li><p>自动切换：基于Zookeeper实现</p>
+<ul>
+<li><p>基于Zookeeper自动切换方案</p>
+<p>ZooKeeper Failover Controller：监控NameNode健康状态，</p>
+<p>并向Zookeeper注册NameNode</p>
+<p>NameNode挂掉后，ZKFC为NameNode竞争锁，获得ZKFC 锁的NameNode变为active</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="搭建hadoop-HA-（适用学习）"><a href="#搭建hadoop-HA-（适用学习）" class="headerlink" title="搭建hadoop HA （适用学习）"></a>搭建hadoop HA （适用学习）</h2><h3 id="硬件资源"><a href="#硬件资源" class="headerlink" title="硬件资源"></a>硬件资源</h3><p>NameNode机器：所有Active和Standby NameNode运行的机器在硬件上相同，与非HA集群中的NameNode硬件一样。</p>
+<p>JN机器：运行JN的机器。JN进程是一个轻量级的进程，一般有可能运行于已经运行了hadoop其他进程的机器上，比如NameNode/JobTracker/YARN的ResourceManager等。需要注意的是：JN进程最少3个，因为edits要写到JN的大多数上。也可以是3、5、7、9等，这样JN可以在丢失(N-1)/2的情况下正常运行。</p>
+<p>在HA集群中，由Standby状态的NameNode进行edits日志和fsimage的合并工作，不能用Secondary NameNode、CheckpointNode或BackupNode，报错。这样在非HA集群中运行Secondary NameNode的硬件在转换为HA集群后移作他用。</p>
+<h3 id="NN-HA搭建（学习规划）"><a href="#NN-HA搭建（学习规划）" class="headerlink" title="NN-HA搭建（学习规划）"></a>NN-HA搭建（学习规划）</h3><p><img src="image/image-20190726103012511.png" alt="image-20190726103012511"></p>
+<h3 id="hadoop-HA-–-配置"><a href="#hadoop-HA-–-配置" class="headerlink" title="hadoop HA – 配置"></a>hadoop HA – 配置</h3><ul>
+<li>跟联邦类似，HA配置向前兼容，允许原来的NameNode在不做改变的情况下接着用。配置设计的初衷是让集群中所有的节点具有相同的配置文件，而不用为不同类型节点的机器部署不同的配置。</li>
+</ul>
+<h4 id="hdfs-site-xml配置"><a href="#hdfs-site-xml配置" class="headerlink" title="hdfs-site.xml配置"></a>hdfs-site.xml配置</h4><h5 id="dfs-ha-namenodes-nameservice-ID-配置"><a href="#dfs-ha-namenodes-nameservice-ID-配置" class="headerlink" title="dfs.ha.namenodes.[nameservice ID]配置"></a>dfs.ha.namenodes.[nameservice ID]配置</h5><p><strong>1、例如“mycluster”。名称选择随你。它用作其他配置的一部分或者作为HDFS绝对路径的一部分。</strong></p>
+<p>需要注意的是：如果你也在使用HDFS的联邦，这个配置也应该包含联邦中其他nameservices，HA或其他的，用逗号隔开。</p>
+<p><code>&lt;property&gt;</code></p>
+<p>  <code>&lt;name&gt;dfs.nameservices&lt;/name&gt;</code></p>
+<p>  <code>&lt;value&gt;mycluster&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><strong>2、其中配置逗号分隔的NameNode ID。集群中DataNode会以此查找NameNode。例如，如果你想用前面的“mycluster”作为nameservice，并且想配置“nn1”、“nn2”、“nn3”作为NameNode的id，则：</strong></p>
+<p><code>&lt;property&gt;</code></p>
+<p>  <code>&lt;name&gt;dfs.ha.namenodes.mycluster&lt;/name&gt;</code></p>
+<p>  <code>&lt;value&gt;nn1,nn2, nn3&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p>注：NameNode最少为2个但是可以配置更多。建议3个不要超过5个因为有网络开销。</p>
+<p><strong>3、配置“servicerpc-address”</strong></p>
+<p><code>&lt;property&gt;</code></p>
+<p>  <code>&lt;name&gt;dfs.namenode.rpc-address.mycluster.nn1&lt;/name&gt;</code></p>
+<p>  <code>&lt;value&gt;machine1.example.com:8020&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><code>&lt;property&gt;</code></p>
+<p>  <code>&lt;name&gt;dfs.namenode.rpc-address.mycluster.nn2&lt;/name&gt;</code></p>
+<p>  <code>&lt;value&gt;machine2.example.com:8020&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><code>&lt;property&gt;</code></p>
+<p>  <code>&lt;name&gt;dfs.namenode.rpc-address.mycluster.nn3&lt;/name&gt;</code></p>
+<p>  <code>&lt;value&gt;machine3.example.com:8020&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><strong>4、如果开启了Hadoop的安全特性，则可以为每个NameNode配置https地址</strong></p>
+<p><code>&lt;property&gt;</code></p>
+<p>  <code>&lt;name&gt;dfs.namenode.http-address.mycluster.nn1&lt;/name&gt;</code></p>
+<p>  <code>&lt;value&gt;machine1.example.com:9870&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><code>&lt;property&gt;</code></p>
+<p>  <code>&lt;name&gt;dfs.namenode.http-address.mycluster.nn2&lt;/name&gt;</code></p>
+<p>  <code>&lt;value&gt;machine2.example.com:9870&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><code>&lt;property&gt;</code></p>
+<p>  <code>&lt;name&gt;dfs.namenode.http-address.mycluster.nn3&lt;/name&gt;</code></p>
+<p>  <code>&lt;value&gt;machine3.example.com:9870&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><strong>5、配置dfs.namenode.shared.edits.dir</strong></p>
+<p>​    此处配置的JournalNode组用于共享edits日志存储，由Active的NameNode负责写入，Standby状态的NameNode负责读，以用于跟Active的NameNode保持同步。可以配置多个地址：</p>
+<p>qjournal://<em>host1:port1</em>;<em>host2:port2</em>;<em>host3:port3</em>/<em>journalId</em></p>
+<p>Journal ID是当前命名服务中的唯一标识符，它允许单一的一组JournalNode对多个命名系统提供存储服务。建议将nameservice的ID用作journalId。</p>
+<p><code>&lt;property&gt;</code></p>
+<p>​      <code>&lt;name&gt;dfs.namenode.shared.edits.dir&lt;/name&gt;</code>                          <code>&lt;value&gt;qjournal://node1.example.com:8485;node2.example.com:8485;node3.example.com:8485/mycluster&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><strong>6、dfs.client.failover.proxy.provider配置</strong></p>
+<p> <strong><em>目的：</em></strong>HDFS客户端使用该属性指定的类找到Active的NameNode以发送客户端请求。hadoop自带了两个实现：ConfiguredFailoverProxyProvider和RequestHedgingProxyProvider（第一个给所有的namenode发请求，以决定哪个是active的，第二个一直调用active的namenode，直到发生故障转移）。要么自己实现，要么如下配置：</p>
+<p><code>&lt;property&gt;</code></p>
+<p>​      <code>&lt;name&gt;dfs.client.failover.proxy.provider.mycluster&lt;/name&gt;</code></p>
+<p>​      <code>&lt;value&gt;org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider&lt;/value&gt;</code></p>
+<p><code>&lt;/property&gt;</code></p>
+<p><strong>7、dfs.ha.fencing.methods配置</strong></p>
+<p> <strong><em>作用</em></strong>：脚本列表或java类的列表，用于在发生故障切花的时候将原来的Active NameNode围起来。</p>
+<ol>
+<li>系统要求一个时间只能有一个Active的NameNode。</li>
+<li>当使用QJM的时候，只有一个NameNode可以向JournalNode写数据，所以文件系统元数据没有发生“脑裂”的可能性。</li>
+<li>当发生了故障转移，很有可能原来的Active NameNode仍在执行客户端的读请求，而此NameNode如果写JournalNode的话，可能它保有的元数据已经过期了，除非kill该NameNode进程。</li>
+<li>即使在使用QJM的时候也最好配置一些围栏措施（fencing method）。</li>
+<li>为了在围栏机制发生错误的时候系统仍可正常运转，最好在该列表的最后配置一个万无一失的方法。</li>
+</ol>
+<p><strong>注意</strong>：即使你不使用围栏方法，你也得配置一些内容，例如：“shell(/bin/true)”。</p>
+<p><strong><em>围栏方法</em></strong>是一些回车符分隔的列表，在发生故障转移的时候系统会一个一个尝试执行，直至围栏成功。hadoop自带了两个方法：shell和sshfence。</p>
+<p>​    <strong>sshfence</strong>选项会利用SSH登录到目标服务器kill掉正在监听的NameNode进程。需要免密钥登录到目标服务器。也就是需要配置dfs.ha.fencing.ssh.private-key-files选项，该属性的值是一个逗号分隔的SSH私钥文件。例如：</p>
+<p> <code>&lt;property&gt;</code></p>
+<p>​      <code>&lt;name&gt;dfs.ha.fencing.methods&lt;/name&gt;</code></p>
+<p>​      <code>&lt;value&gt;sshfence&lt;/value&gt;</code></p>
+<p>​    <code>&lt;/property&gt;</code></p>
+<p>​    <code>&lt;property&gt;</code></p>
+<p>​      <code>&lt;name&gt;dfs.ha.fencing.ssh.private-key-files&lt;/name&gt;</code></p>
+<p>​      <code>&lt;value&gt;/home/exampleuser/.ssh/id_rsa&lt;/value&gt;</code></p>
+<p>​    <code>&lt;/property&gt;</code></p>
+<p>如果想使用<strong>非标准的用户名</strong>或端口来执行SSH，或者配置一个超时时间（ms，超过这个时间被认为是fencing method失败），可以如下配置：</p>
+<p> <code>&lt;property&gt;</code></p>
+<p>​      <code>&lt;name&gt;dfs.ha.fencing.methods&lt;/name&gt;</code></p>
+<p>​      <code>&lt;value&gt;sshfence([[username][:port]])&lt;/value&gt;</code></p>
+<p>​    <code>&lt;/property&gt;</code></p>
+<p>​    <code>&lt;property&gt;</code></p>
+<p>​      <code>&lt;name&gt;dfs.ha.fencing.ssh.connect-timeout&lt;/name&gt;</code></p>
+<p>​      <code>&lt;value&gt;30000&lt;/value&gt;</code></p>
+<p>​    <code>&lt;/property&gt;</code></p>
+<p>shell – 执行shell命令以包围Active NameNode。shell围栏方法执行一个shell命令。配置如下：</p>
+<p> <code>&lt;property&gt;</code></p>
+<p>​      <code>&lt;name&gt;dfs.ha.fencing.methods&lt;/name&gt;</code></p>
+<p>​      <code>&lt;value&gt;shell(/path/to/my/script.sh arg1 arg2 ...)&lt;/value&gt;</code></p>
+<p>​    <code>&lt;/property&gt;</code></p>
+<p>​     上述命令会在bash的shell中执行。</p>
+<p>命令执行的环境中包含hadoop中配置的所有环境变量，用“_”代替“.”。fencing mehtod中可以使用如下的环境变量：</p>
+<table>
+<thead>
+<tr>
+<th><strong>变量名称</strong></th>
+<th><strong>含义</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$target_host</td>
+<td>要围栏的节点主机名</td>
+</tr>
+<tr>
+<td>$target_port</td>
+<td>要围栏的节点IPC端口</td>
+</tr>
+<tr>
+<td>$target_address</td>
+<td>上面两个的组合，合并为host:port</td>
+</tr>
+<tr>
+<td>$target_nameserviceid</td>
+<td>要围栏的NameNode的nameservice ID</td>
+</tr>
+<tr>
+<td>$target_namenodeid</td>
+<td>要围栏的NameNode的namenode ID</td>
+</tr>
+</tbody></table>
+<p><img src="image/image-20190726110402555.png" alt="image-20190726110402555"></p>
+<p><img src="image/image-20190726110714783.png" alt="image-20190726110714783"></p>
+<p><img src="image/image-20190726110743094.png" alt="image-20190726110743094"></p>
+<h4 id="部署细节"><a href="#部署细节" class="headerlink" title="部署细节"></a>部署细节</h4><p>1、启动所有的JournalNode。命令：<strong>hdfs –daemon start journalnode</strong>。 </p>
+<p>2、同步所有HA NamoNode的元数据。</p>
+<p>​    如果是新的HDFS集群，需要在某一台NameNode上执行：<strong>hdfs namenode –format</strong></p>
+<p>​    然后启动该NameNode，在其他NameNode上执行：<strong>hdfs namenode –bootstrapStandby</strong></p>
+<p>​    如果是非HA转到HA，则需要先在NameNode上运行<strong>hdfs namenode –initializeSharedEdits</strong>，用于    将NameNode的edits内容初始化到JournalNode，然后再在其他NameNode上执行：</p>
+<p>​        <strong>hdfs namenode –bootstrapStandby</strong></p>
+<p> 3、启动HA：</p>
+<p>​    <strong>start-dfs.sh</strong> </p>
+<p>4、访问HTTP页面：<a href="http://node:9870/" target="_blank" rel="noopener">http://node:9870</a></p>
+<p>​    需要注意的是：在配置的地址旁边就是NameNode的HA状态（“standby”或者“active”）。</p>
+<p>5、当一个HA的NameNode启动的时候默认是standby状态。</p>
+<h3 id="搭建hadoop-HA-自动故障切换"><a href="#搭建hadoop-HA-自动故障切换" class="headerlink" title="搭建hadoop HA -自动故障切换"></a>搭建hadoop HA -自动故障切换</h3><p>自动故障切换添加了两个新的组件：zookeeper<strong>投票选举集群</strong>，<strong>ZKFailoverController进程</strong>（简称ZKFC）。</p>
+<p><strong>zookeeper</strong>是维护协调数据的高可用服务，监控客户端是否失效，通知客户端任何数据变化。HDFS中的自动切换需要用zookeeper做以下工作：</p>
+<p>失败检测 – 集群中每个NameNode都跟zookeeper维护一个持久会话。如果NameNode失效，zookeeper的会话就会超时，通知其他NameNode进行故障切换。</p>
+<p>选举Active的NameNode – zookeeper提供了选举一个node作为Active NameNode的机制。如果当前NameNode失效，另一个节点在zookeeper建立锁文件表示它作为下一个active的NameNode。</p>
+<p><strong>ZKFC</strong>是zookeeper的客户端，它监控并管理NameNode的状态。每个NameNode都会运行一个ZKFC进程，ZKFC进程主要做如下的工作：</p>
+<p><strong>健康监控</strong> – ZKFC使用健康检查命令周期性地ping本地的NameNode。NameNode返回它的健康状态，ZKFC认为节点健康。如果节点崩溃或处于不健康的状态，健康监控标记它为不健康。</p>
+<p><strong>zookeeper会话管理</strong> – 当本地NameNode处于健康状态，ZKFC跟zookeeper维护一个会话。如果本地NameNode处于active状态，它会在zookeeper中保持一个“lock”的znode。该znode利用了zookeeper的瞬态节点。如果会话过期，zookeeper的锁节点自动删除。</p>
+<p>基于zookeeper的选举 – 如果本地NameNode健康，ZKFC如果发现没有NameNode保持zookeeper的znode锁文件，它会尝试创建一个锁文件。如果成功，它就赢得了选举，它会运行一个故障切换将自己标记为active的NameNode。故障切换流程跟手动的很像：第一，对上一个active的NameNode执行围栏操作，成功后将本地NameNode切换为active状态。</p>
+<p>zookeeper进程一般运行于三个或五个节点。</p>
+<p>由于zookeeper本身是一个轻量级的进程，可以运行于HDFS的NameNode运行的硬件之上。</p>
+<p>很多情况下选择将三个zookeeper进程部署于YARN的ResourceManager所在的节点。</p>
+<p>为了更高的性能和隔离性，最好不要将zookeeper节点数据存储于HDFS元数据所在的节点上。</p>
+<h4 id="配置自动故障切换"><a href="#配置自动故障切换" class="headerlink" title="配置自动故障切换"></a>配置自动故障切换</h4><p>hdfs-site.xml中添加一个新属性：</p>
+<p><code>&lt;property&gt;</code></p>
+<p>   <code>&lt;name&gt;dfs.ha.automatic-failover.enabled&lt;/name&gt;</code></p>
+<p>   <code>&lt;value&gt;true&lt;/value&gt;</code></p>
+<p> <code>&lt;/property&gt;</code></p>
+<p>core-site.xml中添加一个新属性：</p>
+<p><code>&lt;property&gt;</code></p>
+<p>​       <code>&lt;name&gt;ha.zookeeper.quorum&lt;/name&gt;</code></p>
+<p>​       <code>&lt;value&gt;zk1.example.com:2181,zk2.example.com:2181,zk3.example.com:2181&lt;/value&gt;</code></p>
+<p> <code>&lt;/property&gt;</code></p>
+<p>该属性列出运行zookeeper服务的主机名和端口号列表。</p>
+<p>该属性也可以通过nameservice ID后缀，为指定的nameservice配置自动故障切换。比如：在开启了联邦的集群中，你可以显式的启动指定nameservice的自动故障切换：</p>
+<p><code>dfs.ha.automatic-failover.enabled.my-nameservice-id</code></p>
+<p>在zookeeper中进行<strong>初始化</strong>：</p>
+<p><code>[hdfs]$ $HADOOP_HOME/bin/hdfs zkfc -formatZK</code></p>
+<p>也可以手动管理集群中的服务，你需要在NameNode所在的节点主机手动启动zkfc进程：</p>
+<p><code>[hdfs]$ $HADOOP_HOME/bin/hdfs --daemon start zkfc</code></p>
+<h4 id="zookeeper的安全访问"><a href="#zookeeper的安全访问" class="headerlink" title="zookeeper的安全访问"></a>zookeeper的安全访问</h4><p>1、首先需要在<strong>core-site.xml</strong>中配置如下：</p>
+<p><code>&lt;property&gt;</code></p>
+<p>   <code>&lt;name&gt;ha.zookeeper.auth&lt;/name&gt;</code></p>
+<p>   <code>&lt;value&gt;@/path/to/zk-auth.txt&lt;/value&gt;</code></p>
+<p> <code>&lt;/property&gt;</code></p>
+<p> <code>&lt;property&gt;</code></p>
+<p>   <code>&lt;name&gt;ha.zookeeper.acl&lt;/name&gt;</code></p>
+<p>   <code>&lt;value&gt;@/path/to/zk-acl.txt&lt;/value&gt;</code></p>
+<p> <code>&lt;/property&gt;</code></p>
+<p><em>值中的@表示值没有在这一行，而是在指定的一个磁盘文件中。认证信息也可以通过CredentialProvider读取。</em></p>
+<p>第一个配置文件指定了zookeeper的<strong>认证列表</strong>，比如：</p>
+<p><code>digest:hdfs-zkfcs:mypassword</code></p>
+<p>其中<strong>hdfs-zkfcs</strong>是zookeeper中的<strong>唯一用户名</strong>，<strong>mypassword</strong>用作唯一的密码。</p>
+<p>其次，对于认证生成一份zookeeper的ACL：</p>
+<p><code>[hdfs]$ java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper-3.4.2.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider hdfs-zkfcs:mypassword</code></p>
+<p><code>output: hdfs-zkfcs:mypassword-&gt;hdfs-zkfcs:P/OQvnYyU/nF/mGYvB/xurX8dYs=</code></p>
+<p>2、拷贝-&gt;之后的部分到文件zk-acls.txt中，前缀是“digest:”。例如：</p>
+<p><code>digest:hdfs-zkfcs:vlUvLnd8MlacsE80rDuu6ONESbM=:rwcda</code></p>
+<p>为了让ACL生效，你需要重新运行zkfc -formatZK命令。完成后，通过ZK CLI验证：</p>
+<p><code>[zk: localhost:2181(CONNECTED) 1] getAcl /hadoop-ha</code></p>
+<p><code>&#39;digest,&#39;hdfs-zkfcs:vlUvLnd8MlacsE80rDuu6ONESbM=</code></p>
+<p><code>: cdrwa</code></p>
+ <property>
+
+<p>​      <name>dfs.ha.fencing.methods</name></p>
+<p>​      <value>sshfence([[username][:port]])</value></p>
+<p>​    </p></property><p></p>
+<p>​    <property></property></p>
+<p>​      <name>dfs.ha.fencing.ssh.connect-timeout</name></p>
+<p>​      <value>30000</value></p>
+<p>​    </p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        <li title='0' data-url='http://link.hhtjim.com/163/5146554.mp3'></li>
+                    
+                        <li title='1' data-url='http://link.hhtjim.com/qq/001faIUs4M2zna.mp3'></li>
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</html>
