@@ -63,7 +63,7 @@ HDFS  2.x解决方案解决HDFS 1.0中单点故,">
         </div>
         <div class="content markdown">
             <h1 id="HADOOP高可用HA理解与搭建"><a href="#HADOOP高可用HA理解与搭建" class="headerlink" title="HADOOP高可用HA理解与搭建"></a>HADOOP高可用HA理解与搭建</h1><h2 id="起源"><a href="#起源" class="headerlink" title="起源"></a>起源</h2><p>HDFS 1.0中存在单点故障和内存受限问题。从HDFS 2 起  引入HA解决方案</p>
-<h2 id="HDFS-HA架构图"><a href="#HDFS-HA架构图" class="headerlink" title="HDFS HA架构图"></a>HDFS HA架构图</h2><p><img src="image/image-20190726102212249.png" alt="image-20190726102212249"></p>
+<h2 id="HDFS-HA架构图"><a href="#HDFS-HA架构图" class="headerlink" title="HDFS HA架构图"></a>HDFS HA架构图</h2><p><img src="https://i.loli.net/2019/08/25/sGX9iOTKxl2qZFM.png" alt="image-20190726102212249.png"></p>
 <h2 id="HDFS-2-x解决方案"><a href="#HDFS-2-x解决方案" class="headerlink" title="HDFS  2.x解决方案"></a>HDFS  2.x解决方案</h2><p>解决HDFS 1.0中单点故障和内存受限问题，联邦     HA</p>
 <p>HDFS2.x中Federation和HA分离，HA只能有两个NameNode</p>
 <p>解决单点故障</p>
@@ -73,7 +73,7 @@ HDFS  2.x解决方案解决HDFS 1.0中单点故,">
 <p>HDFS Federation(联邦)；水平扩展，支持多个NameNode；</p>
 <p>（1）所有NameNode共享所有DataNode存储资源</p>
 <p>（2）每个NameNode分管一部分目录；</p>
-<p><img src="image/image-20190726091103188.png" alt></p>
+<p><img src="https://i.loli.net/2019/08/25/BhaM9EZOxlWzedN.png" alt="image-20190726091103188.png"></p>
 <h3 id="namenode实现机制"><a href="#namenode实现机制" class="headerlink" title="namenode实现机制"></a>namenode实现机制</h3><p>1、一个NameNode进程处于Active状态，另1个NameNode进程处于Standby状态。Active的NameNode负责处理客户端的请求。</p>
 <p>2、Active的NN修改了元数据之后，会在JNs的半数以上的节点上记录这个日志。Standby状态的NameNode会监视任何对JNs上edit log的更改。一旦edits log出现更改，Standby的NN就会根据edits log更改自己记录的元数据。</p>
 <p>3、当发生故障转移时，Standby主机会确保已经读取了JNs上所有的更改来同步它本身记录的元数据，然后由Standby状态切换为Active状态。</p>
@@ -102,7 +102,7 @@ HDFS  2.x解决方案解决HDFS 1.0中单点故,">
 <h2 id="搭建hadoop-HA-（适用学习）"><a href="#搭建hadoop-HA-（适用学习）" class="headerlink" title="搭建hadoop HA （适用学习）"></a>搭建hadoop HA （适用学习）</h2><h3 id="硬件资源"><a href="#硬件资源" class="headerlink" title="硬件资源"></a>硬件资源</h3><p>NameNode机器：所有Active和Standby NameNode运行的机器在硬件上相同，与非HA集群中的NameNode硬件一样。</p>
 <p>JN机器：运行JN的机器。JN进程是一个轻量级的进程，一般有可能运行于已经运行了hadoop其他进程的机器上，比如NameNode/JobTracker/YARN的ResourceManager等。需要注意的是：JN进程最少3个，因为edits要写到JN的大多数上。也可以是3、5、7、9等，这样JN可以在丢失(N-1)/2的情况下正常运行。</p>
 <p>在HA集群中，由Standby状态的NameNode进行edits日志和fsimage的合并工作，不能用Secondary NameNode、CheckpointNode或BackupNode，报错。这样在非HA集群中运行Secondary NameNode的硬件在转换为HA集群后移作他用。</p>
-<h3 id="NN-HA搭建（学习规划）"><a href="#NN-HA搭建（学习规划）" class="headerlink" title="NN-HA搭建（学习规划）"></a>NN-HA搭建（学习规划）</h3><p><img src="image/image-20190726103012511.png" alt="image-20190726103012511"></p>
+<h3 id="NN-HA搭建（学习规划）"><a href="#NN-HA搭建（学习规划）" class="headerlink" title="NN-HA搭建（学习规划）"></a>NN-HA搭建（学习规划）</h3><p><img src="https://i.loli.net/2019/08/25/a8kNLTxvSAfysju.png" alt="image-20190726103012511.png"></p>
 <h3 id="hadoop-HA-–-配置"><a href="#hadoop-HA-–-配置" class="headerlink" title="hadoop HA – 配置"></a>hadoop HA – 配置</h3><ul>
 <li>跟联邦类似，HA配置向前兼容，允许原来的NameNode在不做改变的情况下接着用。配置设计的初衷是让集群中所有的节点具有相同的配置文件，而不用为不同类型节点的机器部署不同的配置。</li>
 </ul>
@@ -221,9 +221,9 @@ HDFS  2.x解决方案解决HDFS 1.0中单点故,">
 <td>要围栏的NameNode的namenode ID</td>
 </tr>
 </tbody></table>
-<p><img src="image/image-20190726110402555.png" alt="image-20190726110402555"></p>
-<p><img src="image/image-20190726110714783.png" alt="image-20190726110714783"></p>
-<p><img src="image/image-20190726110743094.png" alt="image-20190726110743094"></p>
+<p><img src="https://i.loli.net/2019/08/25/vwn5cIJF69MNfYA.png" alt="image-20190726110402555.png"></p>
+<p><img src="https://i.loli.net/2019/08/25/48OqPRWYXr2ofm7.png" alt="image-20190726110714783.png"></p>
+<p><img src="https://i.loli.net/2019/08/25/f1NaokHGBDXiquW.png" alt="image-20190726110743094.png"></p>
 <h4 id="部署细节"><a href="#部署细节" class="headerlink" title="部署细节"></a>部署细节</h4><p>1、启动所有的JournalNode。命令：<strong>hdfs –daemon start journalnode</strong>。 </p>
 <p>2、同步所有HA NamoNode的元数据。</p>
 <p>​    如果是新的HDFS集群，需要在某一台NameNode上执行：<strong>hdfs namenode –format</strong></p>
